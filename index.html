@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Тест: Datenbanken und SQL</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBFCFE; --grid:#E3EBF6; --ink:#1E2A44; --muted:#5B6782;
+  --blue:#BFD6F2; --blue-strong:#7FA9DB; --pink:#F9DADA; --pink-strong:#E07A7A;
+  --yellow:#F5EC9A; --green:#4E9A2F; --green-soft:#E3F2D9; --red:#C0392B; --red-soft:#FBE3E0;
+  --card:#FFFFFF; --line:#C9D6E8; --code-bg:#F2F6FB;
+  --sans:"Fira Sans", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --mono:"JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#141B2A; --grid:#1D2638; --ink:#E6ECF7; --muted:#9AA7C0;
+    --blue:#2B4468; --blue-strong:#4F79AE; --pink:#4A2A33; --pink-strong:#E08A8A;
+    --yellow:#5C5420; --green:#7CC95A; --green-soft:#1F3320; --red:#F08676; --red-soft:#3D2222;
+    --card:#1A2234; --line:#2F3C55; --code-bg:#111827;
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#141B2A; --grid:#1D2638; --ink:#E6ECF7; --muted:#9AA7C0;
+  --blue:#2B4468; --blue-strong:#4F79AE; --pink:#4A2A33; --pink-strong:#E08A8A;
+  --yellow:#5C5420; --green:#7CC95A; --green-soft:#1F3320; --red:#F08676; --red-soft:#3D2222;
+  --card:#1A2234; --line:#2F3C55; --code-bg:#111827;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0; color:var(--ink); font-family:var(--sans); font-size:17px; line-height:1.55;
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  background-size:22px 22px;
+  min-height:100vh;
+}
+.wrap{max-width:760px; margin:0 auto; padding:28px 18px 60px}
+header.top{display:flex; align-items:flex-end; justify-content:space-between; gap:12px; margin-bottom:22px}
+.flow{display:flex; flex-direction:column; align-items:flex-start; gap:6px}
+.flow .inputs{display:flex; gap:6px; flex-wrap:wrap}
+.tbox{font-family:var(--mono); font-size:13px; background:var(--blue); border:1px solid var(--blue-strong); padding:2px 8px}
+.ellipse{font-family:var(--mono); font-size:13px; background:var(--yellow); border-radius:50%; padding:4px 26px; margin-left:20px}
+.rbox{font-family:var(--mono); font-size:13px; background:var(--pink); border:1px solid var(--pink-strong); padding:2px 8px; margin-left:34px}
+h1{font-size:clamp(28px,5vw,40px); line-height:1.1; margin:14px 0 6px; font-weight:700; letter-spacing:-0.01em}
+.lead{color:var(--muted); margin:0 0 4px; max-width:60ch}
+button{font:inherit; color:inherit; cursor:pointer}
+:focus-visible{outline:3px solid var(--blue-strong); outline-offset:2px}
+.panel{background:var(--card); border:1px solid var(--line); padding:22px; margin-top:18px}
+.panel h2{font-size:20px; margin:0 0 12px; color:var(--green); font-weight:600}
+.topics{display:grid; gap:8px}
+.topic{display:flex; gap:12px; align-items:flex-start; padding:10px 12px; border:1px solid var(--line); background:var(--paper); cursor:pointer}
+.topic input{margin-top:5px; width:18px; height:18px; accent-color:var(--green)}
+.topic b{display:block; font-weight:600}
+.topic span{color:var(--muted); font-size:15px}
+.counts{display:flex; gap:8px; flex-wrap:wrap}
+.chip{border:1px solid var(--line); background:var(--paper); padding:6px 14px}
+.chip[aria-pressed="true"]{background:var(--blue); border-color:var(--blue-strong); font-weight:600}
+.primary{background:var(--green); color:#fff; border:none; padding:12px 22px; font-weight:600; font-size:17px}
+:root[data-theme="dark"] .primary{color:#0E1A0A}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .primary{color:#0E1A0A}}
+.secondary{background:transparent; border:1px solid var(--line); padding:11px 18px}
+.row{display:flex; gap:10px; flex-wrap:wrap; align-items:center; margin-top:18px}
+.meta{display:flex; justify-content:space-between; gap:10px; font-size:15px; color:var(--muted); flex-wrap:wrap}
+.tag{color:var(--green); font-weight:600}
+.bar{height:6px; background:var(--grid); margin:8px 0 18px}
+.bar i{display:block; height:100%; background:var(--green); transition:width .3s}
+.qtext{font-size:19px; font-weight:500; margin:0 0 14px}
+.qtext code, .ex code{font-family:var(--mono); font-size:.88em; background:var(--code-bg); padding:1px 5px}
+pre.sql{font-family:var(--mono); font-size:14.5px; background:var(--code-bg); border-left:4px solid var(--blue-strong); padding:12px 14px; margin:0 0 14px; overflow-x:auto; white-space:pre}
+.tables{display:flex; gap:12px; flex-wrap:wrap; margin:0 0 14px}
+.tscroll{overflow-x:auto; max-width:100%}
+table.tb{border-collapse:collapse; font-size:13.5px; font-family:var(--sans)}
+table.tb caption{background:var(--blue-strong); color:#fff; font-weight:600; padding:2px 8px; font-size:13px}
+table.tb th{background:var(--blue); font-weight:500; text-align:left; padding:3px 9px; border:1px solid var(--line)}
+table.tb td{background:var(--pink); padding:3px 9px; border:1px solid var(--line); white-space:nowrap}
+th.pk{text-decoration:underline}
+th.fk{text-decoration:overline dashed}
+.opts{display:grid; gap:8px}
+.opt{display:flex; gap:12px; align-items:flex-start; text-align:left; width:100%; background:var(--paper); border:1px solid var(--line); padding:11px 14px; transition:background .15s,border-color .15s}
+.opt:hover:not([disabled]){border-color:var(--blue-strong); background:var(--blue)}
+.opt .k{flex:none; width:24px; height:24px; display:grid; place-items:center; border:1px solid var(--line); font-size:13px; font-weight:600; background:var(--card)}
+.opt .t{flex:1; min-width:0}
+.opt.mono .t{font-family:var(--mono); font-size:14px; white-space:pre-wrap; word-break:break-word}
+.opt[disabled]{cursor:default}
+.opt.right{background:var(--green-soft); border-color:var(--green)}
+.opt.right .k{background:var(--green); color:#fff; border-color:var(--green)}
+.opt.wrong{background:var(--red-soft); border-color:var(--red)}
+.opt.wrong .k{background:var(--red); color:#fff; border-color:var(--red)}
+.ex{margin-top:14px; padding:12px 14px; border-left:4px solid var(--yellow); background:var(--paper)}
+.ex strong{display:block; margin-bottom:2px}
+.ex.ok strong{color:var(--green)} .ex.no strong{color:var(--red)}
+.score{display:flex; align-items:baseline; gap:14px; flex-wrap:wrap}
+.score .big{font-size:56px; font-weight:700; line-height:1}
+.score .of{color:var(--muted)}
+.review{margin-top:10px; display:grid; gap:12px}
+.review .item{border:1px solid var(--line); padding:12px 14px; background:var(--paper)}
+.review .q{font-weight:500; margin-bottom:6px}
+.review .yours{color:var(--red)} .review .corr{color:var(--green)}
+.hidden{display:none}
+.toggle{background:var(--card); border:1px solid var(--line); padding:6px 10px; font-size:14px}
+.hint{font-size:14px; color:var(--muted); margin-top:10px}
+@media (max-width:520px){ body{font-size:16px} .panel{padding:16px} .qtext{font-size:17px} }
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="flow" aria-hidden="true">
+        <div class="inputs"><span class="tbox">Wissen</span><span class="tbox">Fragen</span></div>
+        <span class="ellipse">Abfrage</span>
+        <span class="rbox">&lt;Ergebnis&gt;</span>
+      </div>
+      <h1>Тест: Datenbanken und SQL</h1>
+      <p class="lead">Tabellen, Schlüssel, Abfragen, Kreuzprodukt и Join — по заданиям из учебника. Термины оставлены на немецком.</p>
+    </div>
+    <button class="toggle" id="themeBtn" type="button" aria-label="Переключить тему">◐</button>
+  </header>
+
+  <!-- Старт -->
+  <section id="start">
+    <div class="panel">
+      <h2>Выбери темы</h2>
+      <div class="topics" id="topicList"></div>
+    </div>
+    <div class="panel">
+      <h2>Сколько вопросов</h2>
+      <div class="counts" id="countList"></div>
+      <div class="row">
+        <button class="primary" id="startBtn" type="button">Начать тест</button>
+        <span class="hint" id="startHint"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Вопрос -->
+  <section id="quiz" class="hidden">
+    <div class="panel">
+      <div class="meta"><span class="tag" id="qTopic"></span><span id="qCount"></span></div>
+      <div class="bar"><i id="qBar"></i></div>
+      <p class="qtext" id="qText"></p>
+      <div class="tables" id="qTables"></div>
+      <pre class="sql hidden" id="qCode"></pre>
+      <div class="opts" id="qOpts"></div>
+      <div id="qEx"></div>
+      <div class="row">
+        <button class="primary hidden" id="nextBtn" type="button">Дальше</button>
+        <button class="secondary" id="quitBtn" type="button">Завершить</button>
+      </div>
+      <p class="hint">Клавиши 1–4 выбирают ответ, Enter — следующий вопрос.</p>
+    </div>
+  </section>
+
+  <!-- Результат -->
+  <section id="result" class="hidden">
+    <div class="panel">
+      <h2>Ergebnistabelle</h2>
+      <div class="score"><span class="big" id="rScore"></span><span class="of" id="rOf"></span></div>
+      <p id="rMsg"></p>
+      <div class="tscroll"><table class="tb" id="rTable"></table></div>
+      <div class="row">
+        <button class="primary" id="retryWrongBtn" type="button">Повторить ошибки</button>
+        <button class="secondary" id="newBtn" type="button">Новый тест</button>
+      </div>
+    </div>
+    <div class="panel" id="reviewPanel">
+      <h2>Разбор ошибок</h2>
+      <div class="review" id="review"></div>
+    </div>
+  </section>
+</div>
+
+<script>
+const TOPICS = {
+  schema:   {name:"Tabellen und ihr Schema", desc:"Attribut, Attributwert, Datensatz, Primärschlüssel, Datentypen"},
+  select:   {name:"SQL-Abfragen", desc:"SELECT, FROM, WHERE, ORDER BY, LIKE, AND/OR"},
+  aggregat: {name:"Aggregatfunktionen und Operatoren", desc:"GROUP BY, MAX, SUM, AVG, COUNT, вычисляемые Spalten"},
+  kreuz:    {name:"Kreuzprodukt", desc:"Punktschreibweise, Projektion, funktionale Schreibweise, Datenflussdiagramm"},
+  join:     {name:"Fremdschlüssel und Join", desc:"Fremdschlüssel находить, Join формулировать"}
+};
+
+const T_LEHRKRAFT = {title:"Lehrkraft", cols:["Kürzel","Name","Vorname","GebDatum","Ges","verbeamtet","Fach1","Fach2"], pk:[0],
+  rows:[["bab","Bauer","Britta","1992-11-30","w","wahr","D","G"]]};
+const T_SCHULKLASSE = {title:"Schulklasse", cols:["Klasse","Zimmer","Klassenleiter"], pk:[0], fk:[2], rows:[["9f","106","vog"],["10a","210","bab"]]};
+const T_LEHRKRAFT2 = {title:"Lehrkraft", cols:["Kürzel","Name","Vorname","Fach1","Fach2"], pk:[0], rows:[["bab","Bauer","Britta","D","G"],["vog","Vogel","Hilmar","M","INF"]]};
+const T_VORSPEISE = {title:"Vorspeise", cols:["Name","Preis"], pk:[0], rows:[["Eis","2,50"],["Lauchsuppe","1,00"],["Salat","2,00"]]};
+const T_HAUPTGANG = {title:"Hauptgang", cols:["Name","Preis"], pk:[0], rows:[["Spaghetti Bolognese","3,50"],["Pizza Margherita","5,50"],["Pizza Tonno","6,50"]]};
+const T_NACHTISCH = {title:"Nachtisch", cols:["Name","Preis"], pk:[0], rows:[["Pudding","1,50"],["Eis","2,50"]]};
+const T_GRUPPE = {title:"GruppeA", cols:["ID","Name"], pk:[0], rows:[["1","TC Aufschlag"],["2","TV Netzkante"],["3","RW Auslinie"],["4","TC Seitenaus"]]};
+const T_BASKET = {title:"Basketball", cols:["Name","Vorname","Klasse","Lebensalter","Größe","1Pkt","2Pkt","3Pkt","R","Block"],
+  rows:[["Ehrlicher","David","10a","16","182.3","7","14","3","11","9"],["Daecher","Christian","10b","15","178.9","5","5","8","2","0"]]};
+
+// q: текст (HTML разрешён), code: SQL, tables: [...], opts: варианты (первый — правильный, перемешиваются), mono: варианты моноширинным шрифтом
+const QUESTIONS = [
+/* ---------- Tabellen und ihr Schema ---------- */
+{t:"schema", q:"Чем является <code>Kürzel</code> в таблице Lehrkraft?", tables:[T_LEHRKRAFT],
+ opts:["Attribut","Attributwert","Klassenname","Datensatz"],
+ ex:"Kürzel — это заголовок Spalte, т. е. Attribut класса Lehrkraft. Lehrkraft — Klassenname, а bab — Attributwert."},
+{t:"schema", q:"А чем является <code>bab</code> в этой же таблице?", tables:[T_LEHRKRAFT],
+ opts:["Attributwert","Attribut","Klassenname","Tabellenschema"],
+ ex:"bab — конкретное значение Attribut Kürzel у Britta Bauer, то есть Attributwert."},
+{t:"schema", q:"При переводе классов в таблицы — во что превращается каждое Objekt?",
+ opts:["В Zeile (Datensatz)","В Tabelle","В Spalte","В Datentyp"],
+ ex:"Три шага: Klasse → Tabelle, Attribut → Spalte, Objekt → Zeile. Attributwerte одного Objekt образуют Datensatz."},
+{t:"schema", q:"Во что превращается каждое Attribut класса?",
+ opts:["В Spalte","В Zeile","В Tabelle","В Primärschlüssel"],
+ ex:"Из каждого Attribut получается Spalte таблицы."},
+{t:"schema", q:"Какое определение Primärschlüssel верное?",
+ opts:["Attribut(e), которые однозначно идентифицируют каждый Datensatz; в Tabellenschema подчёркиваются","Первая Spalte любой таблицы","Attribut, значения которого берутся из другой таблицы","Attribut с Datentyp Zahl"],
+ ex:"Primärschlüssel (или просто Schlüssel) однозначно определяет Datensatz. В схеме и в таблице он подчёркивается."},
+{t:"schema", q:"Почему в таблице Lehrkraft удобно ввести Spalte <code>Kürzel</code>?",
+ opts:["Name и Vorname могут повторяться, а Kürzel однозначен и короток — подходит как Primärschlüssel","Без Kürzel нельзя хранить Datentyp Text","Kürzel нужен для сортировки по алфавиту","Kürzel заменяет Spalte GebDatum"],
+ ex:"Две учительницы могут носить одно имя. Короткое уникальное Kürzel однозначно определяет Lehrkraft и удобно для ссылок из других таблиц."},
+{t:"schema", q:"Какой Datentyp подходит для Spalte <code>verbeamtet</code> (значения wahr/falsch)?",
+ opts:["Wahrheitswert","Text","Zahl","Datum"],
+ ex:"Значения «wahr/falsch» — это Wahrheitswert. Другие Datentypen из учебника: Text, Zahl, Datum, Zeit."},
+{t:"schema", q:"Класс Mond имеет Attribute Name, Planet, Halbachse, Durchmesser, Umlaufzeit, Masse, entdeckt. Какое Tabellenschema корректно (подчёркнут Primärschlüssel)?",
+ opts:["Mond(<u>Name</u>: Text; Planet: Text; Halbachse: Zahl; Durchmesser: Zahl; Umlaufzeit: Zahl; Masse: Zahl; entdeckt: Zahl)",
+       "Mond(Name: Text; <u>Planet</u>: Text; Halbachse: Zahl; Durchmesser: Zahl; Umlaufzeit: Zahl; Masse: Zahl; entdeckt: Zahl)",
+       "Mond(Name: Text; Planet: Text; Halbachse: Zahl; Durchmesser: Zahl; Umlaufzeit: Zahl; Masse: Zahl; <u>entdeckt</u>: Zahl)",
+       "Mond(<u>Name</u>: Zahl; Planet: Zahl; Halbachse: Text; Durchmesser: Text; Umlaufzeit: Text; Masse: Text; entdeckt: Datum)"],
+ html:true,
+ ex:"Имя Mond однозначно. У одного Planet много лун, а в одном году (например, 1610) открыли несколько лун — поэтому Planet и entdeckt не годятся как Primärschlüssel."},
+{t:"schema", q:"Что показывает Objektkarte <code>M1: Mond</code> с записями <code>Name = Titan</code>, <code>entdeckt = 1655</code>?",
+ opts:["Конкретный Objekt класса Mond с его Attributwerten","Klassenkarte со списком всех Attribute без значений","Tabellenschema таблицы Mond","Результат SQL-Abfrage"],
+ ex:"Objektkarte описывает один Objekt и его Attributwerte. Klassenkarte содержит только Klassenname и Attribute."},
+
+/* ---------- SQL-Abfragen ---------- */
+{t:"select", q:"Какая SQL-Abfrage выдаёт Name и Vorname всех weiblichen Lehrkräfte?", tables:[T_LEHRKRAFT], mono:true,
+ opts:["SELECT Name, Vorname\nFROM   Lehrkraft\nWHERE  Ges = 'w'","SELECT Name, Vorname\nFROM   Ges\nWHERE  Lehrkraft = 'w'","SELECT Name, Vorname\nFROM   Lehrkraft\nORDER BY Ges","SELECT *\nFROM   Lehrkraft\nWHERE  Ges = w"],
+ ex:"После FROM стоит имя таблицы, условие — в WHERE. Текстовый Attributwert пишется в кавычках: 'w'."},
+{t:"select", q:"Vorname и GebDatum всех Lehrkräfte, отсортированные по Vorname:", mono:true,
+ opts:["SELECT Vorname, GebDatum\nFROM   Lehrkraft\nORDER BY Vorname","SELECT Vorname, GebDatum\nFROM   Lehrkraft\nWHERE  Vorname","SELECT Vorname, GebDatum\nFROM   Lehrkraft\nORDER BY GebDatum","SELECT Vorname, GebDatum\nORDER BY Vorname\nFROM   Lehrkraft"],
+ ex:"Сортировка задаётся через ORDER BY и стоит в конце запроса. По умолчанию ASC (по возрастанию)."},
+{t:"select", q:"Name всех Lehrkräfte, которые преподают Deutsch (D) и Englisch (E). Какое условие правильное?", mono:true,
+ opts:["WHERE (Fach1 = 'D' AND Fach2 = 'E')\n   OR (Fach1 = 'E' AND Fach2 = 'D')","WHERE Fach1 = 'D' AND Fach2 = 'E'","WHERE Fach1 = 'D' OR Fach2 = 'E'","WHERE Fach1 = 'D' AND Fach1 = 'E'"],
+ ex:"Предметы могут стоять в любом порядке: D может быть Fach1 или Fach2. Вариант только с Fach1='D' AND Fach2='E' пропустит учителей с E/D. Fach1='D' AND Fach1='E' никогда не выполняется."},
+{t:"select", q:"Name всех Lehrkräfte, чья фамилия начинается на S:", mono:true,
+ opts:["WHERE Name LIKE 'S%'","WHERE Name = 'S%'","WHERE Name LIKE '%S'","WHERE Name LIKE 'S'"],
+ ex:"LIKE сравнивает с шаблоном; % означает любое количество любых символов. '%S' — заканчивается на S. С = знак % воспринимается буквально."},
+{t:"select", q:"Что делает <code>ORDER BY Name DESC</code>?",
+ opts:["Сортирует по Name по убыванию (Z → A)","Сортирует по Name по возрастанию (A → Z)","Удаляет повторяющиеся Name","Показывает только первый Datensatz"],
+ ex:"DESC — descending, по убыванию; ASC — ascending, по возрастанию (по умолчанию)."},
+{t:"select", q:"Что делает <code>AS</code> в <code>SELECT Name AS Nachname FROM Lehrkraft</code>?",
+ opts:["Даёт Spalte в Ergebnistabelle новое имя Nachname","Изменяет имя Spalte в исходной таблице навсегда","Создаёт новую таблицу Nachname","Фильтрует Datensätze"],
+ ex:"AS задаёт имя Spalte только в Ergebnistabelle; исходная таблица не меняется."},
+{t:"select", q:"Что является результатом SQL-Abfrage?",
+ opts:["Снова таблица — Ergebnistabelle","Одно число","Klassenkarte","Изменённая исходная таблица"],
+ ex:"Абфраге на входе получает таблицы и выдаёт новую таблицу — Ergebnistabelle (см. Datenflussdiagramm)."},
+{t:"select", q:"Что означает <code>*</code> в <code>SELECT * FROM Lehrkraft</code>?",
+ opts:["Все Spalten таблицы","Все Datensätze, у которых есть Primärschlüssel","Умножение","Только первую Spalte"],
+ ex:"Звёздочка после SELECT означает «все Spalten»."},
+
+/* ---------- Aggregatfunktionen und Operatoren ---------- */
+{t:"aggregat", q:"Что делает <code>GROUP BY Planet</code>?",
+ opts:["Объединяет Datensätze с одинаковым значением Planet в группу; для каждой группы Aggregatfunktion считает одно значение","Сортирует Monde по Planet","Удаляет все Monde без Planet","Создаёт новую таблицу Planet"],
+ ex:"GROUP BY &lt;Attribut&gt; собирает Datensätze с одинаковым Attributwert в группы. Затем для каждой группы вычисляется одно значение."},
+{t:"aggregat", q:"Чем отличается Operator от Aggregatfunktion?",
+ opts:["Operator вычисляет новое значение из разных Attribute одного Datensatz; Aggregatfunktion — из значений одной Spalte многих Datensätze","Ничем, это синонимы","Operator работает только с Text, Aggregatfunktion — только с Zahl","Aggregatfunktion работает с одним Datensatz, Operator — с целой Spalte"],
+ ex:"Пример Operator: Halbachse/2 для каждой луны. Пример Aggregatfunktion: MAX(Durchmesser) по всем лунам группы."},
+{t:"aggregat", q:"Для каждого Planet — Durchmesser его самого большого Mond:", mono:true,
+ opts:["SELECT Planet, MAX(Durchmesser)\nFROM   Mond\nGROUP BY Planet","SELECT Planet, SUM(Durchmesser)\nFROM   Mond\nGROUP BY Planet","SELECT Planet, MAX(Durchmesser)\nFROM   Mond","SELECT Planet, Durchmesser\nFROM   Mond\nORDER BY Durchmesser DESC"],
+ ex:"Нужна группировка по Planet и MAX внутри каждой группы. Без GROUP BY MAX посчитался бы по всей таблице."},
+{t:"aggregat", q:"Для каждого Planet — сумма масс всех его Monde:", mono:true,
+ opts:["SELECT Planet, SUM(Masse)\nFROM   Mond\nGROUP BY Planet","SELECT Planet, COUNT(Masse)\nFROM   Mond\nGROUP BY Planet","SELECT Planet, AVG(Masse)\nFROM   Mond\nGROUP BY Planet","SELECT SUM(Planet), Masse\nFROM   Mond\nGROUP BY Masse"],
+ ex:"SUM складывает значения; COUNT считал бы количество лун, AVG — среднюю массу."},
+{t:"aggregat", q:"Что не так с этим запросом?", code:"SELECT Masse, Deimos\nFROM   Mond",
+ opts:["Deimos — это Attributwert (имя луны), а не Attribut; нужно WHERE Name = 'Deimos'","Нельзя выбирать Masse","Не хватает GROUP BY","Ошибки нет, запрос выдаёт массу Deimos"],
+ ex:"После SELECT стоят только Spalten. Чтобы получить массу Deimos: SELECT Masse FROM Mond WHERE Name = 'Deimos'."},
+{t:"aggregat", q:"Что выдаёт этот запрос и что в нём подозрительно?", code:"SELECT Name, entdeckt\nFROM   Mond\nWHERE  entdeckt = '1610'",
+ opts:["Name и год открытия всех Monde, открытых в 1610; но entdeckt — Zahl, а '1610' в кавычках — Text","Все Monde, отсортированные по году открытия; ошибок нет","Количество Monde, открытых в 1610","Запрос не работает, потому что в WHERE нельзя использовать числа"],
+ ex:"По смыслу — луны, открытые Галилеем в 1610 году. Datentyp entdeckt — Zahl, поэтому корректнее писать entdeckt = 1610 без кавычек (многие DBMS простят, но это неаккуратно)."},
+{t:"aggregat", q:"В чём ошибка?", code:"SELECT COUNT(*), AVG(*)\nFROM   Mond\nGROUP BY Planet",
+ opts:["AVG(*) не имеет смысла — среднее считается по конкретной Spalte, например AVG(Masse)","COUNT(*) запрещён вместе с GROUP BY","После GROUP BY нельзя писать Planet","Ошибок нет"],
+ ex:"COUNT(*) считает Datensätze в группе — это корректно. Для AVG нужна числовая Spalte. Полезно также добавить Planet в SELECT, чтобы видеть, к какой группе относится число."},
+{t:"aggregat", q:"Что делает этот запрос?", code:"SELECT Name, (Halbachse/2) AS R\nFROM   Mond",
+ opts:["Для каждого Mond выводит Name и новую Spalte R — половину Halbachse (Operator)","Выводит только Monde с Halbachse больше 2","Считает среднюю Halbachse всех Monde","Это ошибка: в SELECT нельзя делить"],
+ ex:"Operator / вычисляет новое значение из Attributwert одного Datensatz. AS R задаёт имя новой Spalte."},
+{t:"aggregat", q:"Для Monde Jupiter нужна Bahngeschwindigkeit v в km/h. Halbachse в km, Umlaufzeit в днях. Какое выражение верное?", mono:true,
+ opts:["2 * 3.1416 * Halbachse / (Umlaufzeit * 24) AS v","2 * 3.1416 * Halbachse / Umlaufzeit AS v","Umlaufzeit * 24 / (2 * 3.1416 * Halbachse) AS v","Halbachse / Umlaufzeit * 24 AS v"],
+ ex:"Путь по орбите ≈ 2·π·Halbachse (km), время = Umlaufzeit·24 (h). v = путь / время. Плюс условие WHERE Planet = 'Jupiter'."},
+{t:"aggregat", q:"Как узнать, есть ли игроки абсолютно одинакового роста?", tables:[T_BASKET], mono:true,
+ opts:["SELECT Größe, COUNT(*) AS Anzahl\nFROM   Basketball\nGROUP BY Größe\nORDER BY Anzahl DESC","SELECT MAX(Größe)\nFROM   Basketball","SELECT Größe\nFROM   Basketball\nORDER BY Name","SELECT AVG(Größe)\nFROM   Basketball\nGROUP BY Klasse"],
+ ex:"Группируем по Größe и считаем игроков в каждой группе. Если в первой строке Anzahl больше 1 — одинаковый рост есть."},
+{t:"aggregat", q:"1Pkt, 2Pkt, 3Pkt — количество попаданий на 1, 2 и 3 очка. Сколько очков у David Ehrlicher?", tables:[T_BASKET],
+ opts:["44","24","35","27"],
+ ex:"1·7 + 2·14 + 3·3 = 7 + 28 + 9 = 44. В SQL это Operator: 1Pkt + 2*2Pkt + 3*3Pkt."},
+{t:"aggregat", q:"Средний возраст игроков в каждой Klasse:", mono:true,
+ opts:["SELECT Klasse, AVG(Lebensalter)\nFROM   Basketball\nGROUP BY Klasse","SELECT Klasse, SUM(Lebensalter)\nFROM   Basketball\nGROUP BY Klasse","SELECT AVG(Klasse), Lebensalter\nFROM   Basketball","SELECT Klasse, AVG(Lebensalter)\nFROM   Basketball\nORDER BY Klasse"],
+ ex:"Группа — Klasse, Aggregatfunktion — AVG по Lebensalter."},
+
+/* ---------- Kreuzprodukt ---------- */
+{t:"kreuz", q:"Сколько всего возможных 3-Gänge-Menüs (Vorspeise, Hauptgang, Nachtisch)?", tables:[T_VORSPEISE,T_HAUPTGANG,T_NACHTISCH],
+ opts:["18","8","9","6"],
+ ex:"Каждое блюдо комбинируется с каждым: 3 · 3 · 2 = 18. Это и есть число Datensätze в Kreuzprodukt."},
+{t:"kreuz", q:"Сколько Zeilen и Spalten у Ergebnistabelle этого запроса?", code:"SELECT * FROM Vorspeise, Nachtisch", tables:[T_VORSPEISE,T_NACHTISCH],
+ opts:["6 Zeilen, 4 Spalten","5 Zeilen, 2 Spalten","6 Zeilen, 2 Spalten","5 Zeilen, 4 Spalten"],
+ ex:"Zeilen перемножаются (3 · 2 = 6), Spalten складываются (2 + 2 = 4): каждый Datensatz одной таблицы комбинируется с каждым другой."},
+{t:"kreuz", q:"Какая проблема возникает в этом запросе?", code:"SELECT * FROM Vorspeise, Hauptgang, Nachtisch\nWHERE Name = 'Eis'",
+ opts:["Name неоднозначен: такая Spalte есть во всех трёх таблицах","Eis нет в таблице Hauptgang, поэтому результат пустой","Нельзя указывать три таблицы после FROM","WHERE нельзя использовать с Kreuzprodukt"],
+ ex:"Spalte Name есть в каждой таблице, DBMS не знает, какая имеется в виду. Решение — Punktschreibweise: Nachtisch.Name."},
+{t:"kreuz", q:"Сколько Datensätze выдаст этот запрос?", code:"SELECT * FROM Vorspeise, Hauptgang, Nachtisch\nWHERE Nachtisch.Name = 'Eis'",
+ opts:["9","18","3","1"],
+ ex:"Из Nachtisch остаётся только Eis, остальные таблицы полностью: 3 · 3 · 1 = 9."},
+{t:"kreuz", q:"Как называется запись <code>Vorspeise.Name</code>?",
+ opts:["Punktschreibweise","Projektion","Fremdschlüssel","Stelligkeit"],
+ ex:"Punktschreibweise &lt;Tabelle&gt;.&lt;Spalte&gt; различает одинаковые имена Spalten разных таблиц."},
+{t:"kreuz", q:"Как записать <code>SELECT * FROM Vorspeise, Hauptgang</code> в funktionaler Schreibweise?", mono:true,
+ opts:["Kreuzprodukt(Vorspeise; Hauptgang)","Projektion(Vorspeise; Hauptgang)","Vorspeise(Kreuzprodukt; Hauptgang)","Join(Vorspeise; Hauptgang)"],
+ ex:"Ergebnistabelle = Kreuzprodukt(&lt;Tabelle1&gt;; &lt;Tabelle2&gt;; …)."},
+{t:"kreuz", q:"Запишите запрос как Verkettung функций Kreuzprodukt и Projektion:", code:"SELECT Vorspeise.Name, Nachtisch.Name\nFROM   Vorspeise, Nachtisch", mono:true,
+ opts:["Projektion(Kreuzprodukt(Vorspeise; Nachtisch);\n          Vorspeise.Name; Nachtisch.Name)","Kreuzprodukt(Projektion(Vorspeise; Nachtisch);\n             Vorspeise.Name; Nachtisch.Name)","Projektion(Vorspeise.Name; Nachtisch.Name)","Kreuzprodukt(Vorspeise.Name; Nachtisch.Name)"],
+ ex:"Сначала (внутри) строится Kreuzprodukt, затем к его результату применяется Projektion — выбор Spalten."},
+{t:"kreuz", q:"Что значит, что Kreuzprodukt имеет variable Stelligkeit?",
+ opts:["Функция может принимать разное количество таблиц: 2, 3 и больше","Результат может иметь разное число Spalten в каждой Zeile","Kreuzprodukt работает только с числами","Порядок таблиц влияет на число Datensätze"],
+ ex:"Stelligkeit — количество входов функции. Kreuzprodukt(T1; T2; T3; …) принимает сколько угодно таблиц."},
+{t:"kreuz", q:"Что изображают элементы Datenflussdiagramm?",
+ opts:["Синие прямоугольники — входные таблицы, жёлтый эллипс — функция (Kreuzprodukt, Projektion…), розовый прямоугольник — Ergebnistabelle","Синие — Primärschlüssel, жёлтые — Fremdschlüssel, розовые — ошибки","Все элементы — таблицы, цвет ничего не значит","Эллипс — Datensatz, прямоугольник — Attribut"],
+ ex:"Datenflussdiagramm показывает, как данные проходят через функции: входы → Funktion → &lt;Ergebnistabelle&gt;."},
+{t:"kreuz", q:"Fernanda хочет две Vorspeisen в любом порядке. Какой запрос работает?", mono:true,
+ opts:["SELECT * FROM Vorspeise AS V1, Vorspeise AS V2","SELECT * FROM Vorspeise, Vorspeise","SELECT * FROM Vorspeise * 2","SELECT Vorspeise, Vorspeise FROM Vorspeise"],
+ ex:"Для Kreuzprodukt таблицы с собой ей нужно дать два разных имени через AS. Потом в Projektion используем Punktschreibweise: V1.Name."},
+{t:"kreuz", q:"Все комбинации из двух Nachtische, только названия:", mono:true,
+ opts:["SELECT N1.Name, N2.Name\nFROM   Nachtisch AS N1, Nachtisch AS N2","SELECT Name, Name\nFROM   Nachtisch, Nachtisch","SELECT N1.Name, N2.Name\nFROM   Nachtisch","SELECT *\nFROM   Nachtisch AS N1"],
+ ex:"Kreuzprodukt Nachtisch с собой (переименование через AS) и Projektion на N1.Name, N2.Name."},
+{t:"kreuz", q:"В Tanzkurs 12 Mädchen и 12 Jungen. Каждая пара (Mädchen|Junge) должна встретиться один раз. Сколько Datensätze у Kreuzprodukt?",
+ opts:["144","24","66","132"],
+ ex:"12 · 12 = 144. SQL: SELECT Mädchen.Vorname, Junge.Vorname FROM Mädchen, Junge."},
+{t:"kreuz", q:"Kreuzprodukt GruppeA с собой даёт 16 Datensätze. Сколько из них — осмысленные Paarungen (с Hin- и Rückspiel)?", tables:[T_GRUPPE],
+ opts:["12","16","6","4"],
+ ex:"4 · 4 = 16, но 4 Paarungen — команда против самой себя (G1.ID = G2.ID). Остаётся 12: каждая пара дважды — Hin- и Rückspiel."},
+{t:"kreuz", q:"Какое условие оставит каждую пару только один раз (без Rückspiel)?", tables:[T_GRUPPE], mono:true,
+ opts:["WHERE G1.ID < G2.ID","WHERE G1.ID <> G2.ID","WHERE G1.ID = G2.ID","WHERE G1.Name = G2.Name"],
+ ex:"G1.ID &lt; G2.ID оставляет (1,2), но не (2,1) — получится 6 Paarungen. &lt;&gt; убирает только игры против себя."},
+
+/* ---------- Fremdschlüssel und Join ---------- */
+{t:"join", q:"Почему этот запрос не даёт нужный список «Klasse и её Klassenleiter»?", code:"SELECT Klasse, Name, Fach1, Fach2\nFROM   Schulklasse, Lehrkraft", tables:[T_SCHULKLASSE,T_LEHRKRAFT2],
+ opts:["Это Kreuzprodukt: каждая Klasse комбинируется с каждой Lehrkraft, а не только со своим Klassenleiter","В Lehrkraft нет Spalte Klasse","Нельзя выбирать Spalten из двух таблиц","Нужен ORDER BY Klasse"],
+ ex:"Без условия получаются все комбинации (2 · 2 = 4), из них по смыслу верны только те, где Klassenleiter = Kürzel."},
+{t:"join", q:"По какому признаку узнаются осмысленные Datensätze Kreuzprodukt Schulklasse × Lehrkraft?", tables:[T_SCHULKLASSE,T_LEHRKRAFT2],
+ opts:["Klassenleiter = Kürzel","Klasse = Kürzel","Zimmer = Fach1","Name = Klassenleiter"],
+ ex:"Значение Fremdschlüssel Klassenleiter должно совпадать с Primärschlüssel Kürzel."},
+{t:"join", q:"Что такое Fremdschlüssel?",
+ opts:["Attribut, содержащий значения Primärschlüssel другой (обычно) таблицы","Второй Primärschlüssel той же таблицы","Attribut, значения которого нельзя повторять","Скрытая Spalte, которую создаёт DBMS"],
+ ex:"Пример: Schulklasse.Klassenleiter содержит только значения Lehrkraft.Kürzel. В схеме Fremdschlüssel пунктирно надчёркивается."},
+{t:"join", q:"Должны ли совпадать имена Fremdschlüssel и связанного Primärschlüssel?",
+ opts:["Нет, но Datentyp должен совпадать","Да, имена и Datentyp должны совпадать","Нет, и Datentyp тоже может быть разным","Да, а Datentyp может быть разным"],
+ ex:"Beachte: Klassenleiter и Kürzel называются по-разному, но оба имеют Datentyp Text."},
+{t:"join", q:"Что гарантирует DBMS, если ему сообщить, что Attribut — Fremdschlüssel?",
+ opts:["В Fremdschlüssel нельзя внести значение, которого нет в связанном Primärschlüssel","Fremdschlüssel автоматически сортируется","Fremdschlüssel становится Primärschlüssel","Join выполняется без WHERE"],
+ ex:"Так нельзя записать Klassenleiter 'xyz', если Lehrkraft с Kürzel 'xyz' не существует."},
+{t:"join", q:"Planet(<u>Name</u>: Text; Halbachse: Zahl; …) и Mond(<u>Name</u>: Text; Planet: Text; Halbachse: Zahl; …). Где Fremdschlüssel?", html:true,
+ opts:["Mond.Planet → Planet.Name","Planet.Name → Mond.Name","Mond.Halbachse → Planet.Halbachse","Mond.Name → Planet.Name"],
+ ex:"Spalte Planet в Mond содержит имена планет — значения Primärschlüssel Planet.Name."},
+{t:"join", q:"Stadt(<u>Name</u>; Einwohner; liegtIn), Land(<u>Name</u>; Einwohner; Staatsform). На что ссылается Stadt.liegtIn?", html:true,
+ opts:["На Land.Name","На Stadt.Name","На Land.Einwohner","Ни на что, это обычный Attribut"],
+ ex:"liegtIn хранит название страны, в которой лежит город, — значение Primärschlüssel Land.Name."},
+{t:"join", q:"Fluss(<u>Name</u>: Text; Länge: Zahl; entspringtIn: Text; mündetIn: Text). Сколько Fremdschlüssel в этой таблице?", html:true,
+ opts:["Два: entspringtIn и mündetIn","Один: Name","Ни одного","Один: Länge"],
+ ex:"Таблица может иметь несколько Fremdschlüssel: entspringtIn и mündetIn ссылаются на Primärschlüssel других таблиц."},
+{t:"join", q:"Person(<u>Name</u>; Anschrift; arbeitetIn; Position), Firma(<u>Name</u>; …), Position(<u>Bezeichnung</u>; Gehalt). На что ссылается Person.Position?", html:true,
+ opts:["На Position.Bezeichnung","На Firma.Name","На Person.Name","На Position.Gehalt"],
+ ex:"Имена Fremdschlüssel и Primärschlüssel могут различаться: Person.Position → Position.Bezeichnung, Person.arbeitetIn → Firma.Name."},
+{t:"join", q:"Какое определение Join верное?", mono:true,
+ opts:["Join(T1; T2) = Selektion(Kreuzprodukt(T1; T2);\n               T1.Primärschlüssel = T2.Fremdschlüssel)","Join(T1; T2) = Projektion(Kreuzprodukt(T1; T2))","Join(T1; T2) = Kreuzprodukt(T1; T2)","Join(T1; T2) = Selektion(T1; T2)"],
+ ex:"Join — это Kreuzprodukt, к которому сразу применяется Selektion по равенству Primärschlüssel и Fremdschlüssel."},
+{t:"join", q:"Правильная SQL-Abfrage для списка к Elternabend:", tables:[T_SCHULKLASSE,T_LEHRKRAFT2], mono:true,
+ opts:["SELECT Klasse, Name, Fach1, Fach2\nFROM   Schulklasse, Lehrkraft\nWHERE  Klassenleiter = Kürzel","SELECT Klasse, Name, Fach1, Fach2\nFROM   Schulklasse, Lehrkraft","SELECT Klasse, Name, Fach1, Fach2\nFROM   Schulklasse, Lehrkraft\nWHERE  Klasse = Kürzel","SELECT Klasse, Name, Fach1, Fach2\nFROM   Schulklasse\nWHERE  Klassenleiter = Kürzel"],
+ ex:"Обе таблицы после FROM и условие Join: Fremdschlüssel = Primärschlüssel."},
+{t:"join", q:"Что дополнительно ограничивает это условие?", code:"WHERE Klassenleiter = Kürzel AND Fach1 = 'D'",
+ opts:["Только классы, у которых Klassenleiter имеет Fach1 = Deutsch","Все Lehrkräfte, преподающие Deutsch, даже без класса","Только классы без Klassenleiter","Ничего, AND Fach1 = 'D' игнорируется"],
+ ex:"Первая часть — Join, вторая — обычная Selektion, которая ещё уменьшает число Datensätze."},
+{t:"join", q:"Schüler(<u>Id</u>; Name; Vorname; Klasse; GebDatum) и Schulklasse(<u>Klasse</u>; Leiter). Какой Join верный?", html:true, mono:true,
+ opts:["SELECT * FROM Schüler, Schulklasse\nWHERE Schüler.Klasse = Schulklasse.Klasse","SELECT * FROM Schüler, Schulklasse\nWHERE Schüler.Id = Schulklasse.Klasse","SELECT * FROM Schüler, Schulklasse\nWHERE Klasse = Klasse","SELECT * FROM Schüler, Schulklasse\nWHERE Schüler.Name = Schulklasse.Leiter"],
+ ex:"Fremdschlüssel Schüler.Klasse → Schulklasse.Klasse. Так как имена одинаковы, нужна Punktschreibweise."},
+{t:"join", q:"Stadt(<u>AGS</u>; Name; BL; Vorwahl; Einwohner; HöheNN) и Bundesland(<u>Abk</u>; Name). Какое условие Join?", html:true, mono:true,
+ opts:["WHERE Stadt.BL = Bundesland.Abk","WHERE Stadt.Name = Bundesland.Name","WHERE Stadt.AGS = Bundesland.Abk","WHERE Stadt.BL = Bundesland.Name"],
+ ex:"BL содержит сокращения вроде BY, HE — это значения Primärschlüssel Bundesland.Abk."},
+{t:"join", q:"Bestellung(<u>BestNr</u>; Name; Preis; ArtNr; Kunde; Datum) и Kunde(<u>KNr</u>; Name). Где Fremdschlüssel?", html:true,
+ opts:["Bestellung.Kunde → Kunde.KNr","Bestellung.Name → Kunde.Name","Kunde.KNr → Bestellung.BestNr","Bestellung.ArtNr → Kunde.KNr"],
+ ex:"Kunde в Bestellung хранит номер клиента (например 5023) — значение Primärschlüssel KNr. Join: WHERE Bestellung.Kunde = Kunde.KNr."},
+{t:"join", q:"Названия всех Planeten и их Monde вместе с обоими Durchmesser:", mono:true,
+ opts:["SELECT Planet.Name, Planet.Durchmesser,\n       Mond.Name, Mond.Durchmesser\nFROM   Planet, Mond\nWHERE  Mond.Planet = Planet.Name","SELECT Planet.Name, Planet.Durchmesser,\n       Mond.Name, Mond.Durchmesser\nFROM   Planet, Mond","SELECT Name, Durchmesser, Name, Durchmesser\nFROM   Planet, Mond\nWHERE  Planet = Name","SELECT Planet.Name, Mond.Name\nFROM   Planet, Mond\nWHERE  Mond.Name = Planet.Name"],
+ ex:"Join по Mond.Planet = Planet.Name, а одинаковые имена Spalten различаются через Punktschreibweise."},
+{t:"join", q:"Как добавить отношение Durchmesser Mond / Durchmesser Planet и отсортировать по нему по убыванию?", mono:true,
+ opts:["…, Mond.Durchmesser / Planet.Durchmesser AS Verhältnis\n… ORDER BY Verhältnis DESC","…, Planet.Durchmesser / Mond.Durchmesser AS Verhältnis\n… ORDER BY Verhältnis DESC","…, MAX(Mond.Durchmesser) AS Verhältnis\n… GROUP BY Verhältnis","…, Mond.Durchmesser / Planet.Durchmesser AS Verhältnis\n… ORDER BY Verhältnis ASC"],
+ ex:"Новая Spalte через Operator /, имя через AS, сортировка по убыванию — DESC."}
+];
+
+/* ---------- состояние ---------- */
+const $ = id => document.getElementById(id);
+let selectedTopics = new Set(Object.keys(TOPICS));
+let count = 20;
+let pool = [], idx = 0, answers = [], locked = false, currentOrder = [];
+
+function shuffle(a){ a = a.slice(); for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]];} return a; }
+function show(id){ ["start","quiz","result"].forEach(s => $(s).classList.toggle("hidden", s!==id)); window.scrollTo({top:0}); }
+
+/* ---------- старт ---------- */
+function renderStart(){
+  const list = $("topicList"); list.innerHTML = "";
+  for(const [key,tp] of Object.entries(TOPICS)){
+    const n = QUESTIONS.filter(q=>q.t===key).length;
+    const lab = document.createElement("label"); lab.className = "topic";
+    lab.innerHTML = `<input type="checkbox" ${selectedTopics.has(key)?"checked":""}><div><b></b><span></span></div>`;
+    lab.querySelector("b").textContent = tp.name;
+    lab.querySelector("span").textContent = `${tp.desc} — вопросов: ${n}`;
+    lab.querySelector("input").addEventListener("change", e => { e.target.checked ? selectedTopics.add(key) : selectedTopics.delete(key); updateHint(); });
+    list.appendChild(lab);
+  }
+  const cl = $("countList"); cl.innerHTML = "";
+  [10,20,30,"все"].forEach(c => {
+    const b = document.createElement("button"); b.type="button"; b.className="chip"; b.textContent = c;
+    b.setAttribute("aria-pressed", String(c===count));
+    b.addEventListener("click", () => { count = c; [...cl.children].forEach(x=>x.setAttribute("aria-pressed", String(x===b))); updateHint(); });
+    cl.appendChild(b);
+  });
+  updateHint();
+}
+function available(){ return QUESTIONS.filter(q => selectedTopics.has(q.t)); }
+function updateHint(){
+  const n = available().length;
+  const real = count==="все" ? n : Math.min(count,n);
+  $("startBtn").disabled = n===0;
+  $("startHint").textContent = n===0 ? "Выбери хотя бы одну тему." : `Будет вопросов: ${real}`;
+}
+function startQuiz(questions){
+  pool = questions; idx = 0; answers = []; show("quiz"); renderQuestion();
+}
+$("startBtn").addEventListener("click", () => {
+  const av = shuffle(available());
+  startQuiz(count==="все" ? av : av.slice(0, count));
+});
+
+/* ---------- вопрос ---------- */
+function tableEl(t){
+  const wrap = document.createElement("div"); wrap.className = "tscroll";
+  const tb = document.createElement("table"); tb.className = "tb";
+  const cap = document.createElement("caption"); cap.textContent = t.title; tb.appendChild(cap);
+  const hr = document.createElement("tr");
+  t.cols.forEach((c,i) => { const th = document.createElement("th"); th.textContent = c;
+    if(t.pk && t.pk.includes(i)) th.className = "pk"; if(t.fk && t.fk.includes(i)) th.className = "fk"; hr.appendChild(th); });
+  tb.appendChild(hr);
+  t.rows.forEach(r => { const tr = document.createElement("tr"); r.forEach(v => { const td = document.createElement("td"); td.textContent = v; tr.appendChild(td); }); tb.appendChild(tr); });
+  wrap.appendChild(tb); return wrap;
+}
+function renderQuestion(){
+  locked = false;
+  const q = pool[idx];
+  $("qTopic").textContent = TOPICS[q.t].name;
+  $("qCount").textContent = `Вопрос ${idx+1} из ${pool.length}`;
+  $("qBar").style.width = (idx/pool.length*100) + "%";
+  $("qText").innerHTML = q.q;
+  const tw = $("qTables"); tw.innerHTML = ""; (q.tables||[]).forEach(t => tw.appendChild(tableEl(t)));
+  const code = $("qCode"); if(q.code){ code.textContent = q.code; code.classList.remove("hidden"); } else code.classList.add("hidden");
+  currentOrder = shuffle(q.opts.map((_,i)=>i));
+  const ow = $("qOpts"); ow.innerHTML = "";
+  currentOrder.forEach((oi, pos) => {
+    const b = document.createElement("button"); b.type="button"; b.className = "opt" + (q.mono ? " mono":"");
+    b.innerHTML = `<span class="k">${pos+1}</span><span class="t"></span>`;
+    if(q.html) b.querySelector(".t").innerHTML = q.opts[oi]; else b.querySelector(".t").textContent = q.opts[oi];
+    b.addEventListener("click", () => choose(pos));
+    ow.appendChild(b);
+  });
+  $("qEx").innerHTML = ""; $("nextBtn").classList.add("hidden");
+}
+function choose(pos){
+  if(locked) return; locked = true;
+  const q = pool[idx]; const chosen = currentOrder[pos]; const ok = chosen === 0;
+  answers.push({q, chosen, ok});
+  const btns = [...$("qOpts").children];
+  btns.forEach((b,p) => { b.disabled = true; if(currentOrder[p]===0) b.classList.add("right"); else if(p===pos) b.classList.add("wrong"); });
+  const ex = document.createElement("div"); ex.className = "ex " + (ok?"ok":"no");
+  ex.innerHTML = `<strong>${ok ? "Верно." : "Неверно."}</strong><span></span>`;
+  ex.querySelector("span").innerHTML = q.ex;
+  $("qEx").appendChild(ex);
+  const nb = $("nextBtn"); nb.textContent = idx+1 < pool.length ? "Дальше" : "Показать результат";
+  nb.classList.remove("hidden"); nb.focus({preventScroll:true});
+  $("qBar").style.width = ((idx+1)/pool.length*100) + "%";
+}
+$("nextBtn").addEventListener("click", () => { idx++; idx < pool.length ? renderQuestion() : renderResult(); });
+$("quitBtn").addEventListener("click", () => { answers.length ? renderResult() : (show("start"), renderStart()); });
+document.addEventListener("keydown", e => {
+  if($("quiz").classList.contains("hidden")) return;
+  if(!locked && /^[1-4]$/.test(e.key)){ const p = +e.key-1; if(p < currentOrder.length) choose(p); }
+  else if(locked && e.key==="Enter" && document.activeElement !== $("nextBtn")) $("nextBtn").click();
+});
+
+/* ---------- результат ---------- */
+function renderResult(){
+  show("result");
+  const right = answers.filter(a=>a.ok).length, total = answers.length;
+  const pct = total ? Math.round(right/total*100) : 0;
+  $("rScore").textContent = pct + "%";
+  $("rOf").textContent = `${right} из ${total} правильно`;
+  $("rMsg").textContent = pct>=90 ? "Отлично — тема усвоена." : pct>=70 ? "Хорошо. Посмотри разбор ошибок ниже." : pct>=50 ? "Неплохо, но стоит повторить темы с низким результатом." : "Повтори теорию из учебника и пройди тест ещё раз.";
+  const tb = $("rTable"); tb.innerHTML = "<caption>Ergebnis nach Thema</caption><tr><th>Thema</th><th>Верно</th><th>Всего</th><th>%</th></tr>";
+  for(const [key,tp] of Object.entries(TOPICS)){
+    const a = answers.filter(x=>x.q.t===key); if(!a.length) continue;
+    const r = a.filter(x=>x.ok).length;
+    const tr = document.createElement("tr");
+    [tp.name, r, a.length, Math.round(r/a.length*100)+"%"].forEach(v => { const td=document.createElement("td"); td.textContent=v; tr.appendChild(td); });
+    tb.appendChild(tr);
+  }
+  const wrong = answers.filter(a=>!a.ok);
+  $("retryWrongBtn").classList.toggle("hidden", !wrong.length);
+  $("reviewPanel").classList.toggle("hidden", !wrong.length);
+  const rv = $("review"); rv.innerHTML = "";
+  wrong.forEach(a => {
+    const d = document.createElement("div"); d.className = "item";
+    const strip = s => { const t=document.createElement("div"); t.innerHTML=s; return t.textContent; };
+    d.innerHTML = `<div class="q"></div><div class="yours"></div><div class="corr"></div><div class="hint"></div>`;
+    d.querySelector(".q").textContent = strip(a.q.q) + (a.q.code ? "  [" + a.q.code.replace(/\s+/g," ") + "]" : "");
+    d.querySelector(".yours").textContent = "Твой ответ: " + strip(a.q.opts[a.chosen]);
+    d.querySelector(".corr").textContent = "Правильно: " + strip(a.q.opts[0]);
+    d.querySelector(".hint").innerHTML = a.q.ex;
+    rv.appendChild(d);
+  });
+}
+$("retryWrongBtn").addEventListener("click", () => startQuiz(shuffle(answers.filter(a=>!a.ok).map(a=>a.q))));
+$("newBtn").addEventListener("click", () => { show("start"); renderStart(); });
+
+/* ---------- тема ---------- */
+$("themeBtn").addEventListener("click", () => {
+  const root = document.documentElement;
+  const dark = root.dataset.theme ? root.dataset.theme==="dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+  root.dataset.theme = dark ? "light" : "dark";
+});
+
+renderStart();
+</script>
+</body>
+</html>
